@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>ER Triage Simulator</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="sidebar">
+        <h2>ER Triage Control</h2>
+        
+        <div class="control-group">
+            <label>Patient Name:</label>
+            <input type="text" id="pName" placeholder="e.g. John Doe">
+        </div>
+        
+        <div class="control-group">
+            <label>Severity (1 = Critical, 10 = Minor):</label>
+            <input type="number" id="pSeverity" min="1" max="10" value="5">
+        </div>
+        
+        <button onclick="admitPatient()">Admit Patient</button>
+        <hr>
+        <button onclick="treatPatient()" class="treat-btn">Doctor Ready (Treat Next)</button>
+        
+        <div id="statusMessage"></div>
+    </div>
+
+    <div class="canvas-container"> // Container for dysplaing the hospital layout and patient flow
+        <canvas id="hospitalCanvas" width="1000" height="800"></canvas>
+    </div>
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>
