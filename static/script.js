@@ -40,10 +40,21 @@ async function treatPatient() {
     fetchState(); // Grab the new tree data and redraw
 }
 
+// Reset the hospital state (clear all patients and records)
+async function resetHospital() {
+    const response = await fetch('/reset', { method: 'POST' });
+    const result = await response.json();
+    
+    document.getElementById('statusMessage').innerText = result.message;
+    fetchState(); // Grab the empty state and clear the canvas
+}
+
 // Drawing Logic
 function draw(data) {
     ctx.clearRect(0, 0, canvas.width, canvas.height); // Wipe the canvas clean
     
+    ctx.textAlign = "left";
+
     // Draw Titles
     ctx.fillStyle = "black";
     ctx.font = "bold 20px Arial";
@@ -100,46 +111,77 @@ function drawRBT(node, x, y, horizontalSpacing) {
     ctx.fillText(node.name, x, y - 25);
 }
 
+// A constant for the minimum horizontal space one node needs
+const MIN_NODE_WIDTH = 80; 
+
+// Calculate exactly how much horizontal space a tree needs
+function getTreeWidth(node) {
+    if (!node) return 0;
+    // If it's a leaf node, it just needs enough space for its own circle
+    if (!node.children || node.children.length === 0) {
+        return MIN_NODE_WIDTH;
+    }
+    // If it has children, its width is the sum of all its children's widths
+    let totalWidth = 0;
+    node.children.forEach(child => {
+        totalWidth += getTreeWidth(child);
+    });
+    return totalWidth;
+}
+
+// Draw the roots
 function drawBinomialHeap(roots) {
-    let startX = 100;
-    let startY = 100;
+    let startX = 50; // Starting left margin
+    let startY = 120;
     
     roots.forEach(root => {
-        // Draw each binomial tree in the root list
-        let treeWidth = drawBHNode(root, startX, startY, 60);
-        startX += treeWidth + 40; // Shift right for the next tree
+        let treeWidth = getTreeWidth(root); // Find out how wide this tree is
+        let rootCenterX = startX + (treeWidth / 2); // Find the exact center of its "border"
+        
+        drawBHNode(root, rootCenterX, startY);
+        
+        startX += treeWidth + 40; // Move startX over for the next tree in the root list
     });
 }
 
-function drawBHNode(node, x, y, spacing) {
-    if (!node) return 0;
+// Draw the nodes the standard, centered way
+function drawBHNode(node, x, y) {
+    if (!node) return;
 
-    let childY = y + 70;
-    let totalWidth = 50; // Base width of a single node
+    let childY = y + 80;
 
-    node.children.forEach((child, index) => {
-        // Calculate child position branching down and to the right
-        let childX = x - 20 + (index * spacing * 1.5) + (totalWidth / 2);
-        
-        // Draw connecting line
-        ctx.beginPath();
-        ctx.moveTo(x, y);
-        ctx.lineTo(childX, childY);
-        ctx.stroke();
+    // Draw children first so lines go behind the parent circle
+    if (node.children && node.children.length > 0) {
+        let totalChildrenWidth = getTreeWidth(node);
+        // Start placing children at the far left edge of this node's assigned border
+        let currentX = x - (totalChildrenWidth / 2);
 
-        // Recursively draw child and add its width to the total
-        let childWidth = drawBHNode(child, childX, childY, spacing * 0.8);
-        totalWidth += childWidth;
-    });
+        node.children.forEach(child => {
+            let childWidth = getTreeWidth(child);
+            let childCenterX = currentX + (childWidth / 2);
 
-    // Draw the node circle
+            // Draw connecting line
+            ctx.beginPath();
+            ctx.moveTo(x, y + 20); // bottom of parent
+            ctx.lineTo(childCenterX, childY - 20); // top of child
+            ctx.stroke();
+
+            // Recursively draw child perfectly centered in its own allotted space
+            drawBHNode(child, childCenterX, childY);
+
+            // Move X cursor over by the width of the child we just drew
+            currentX += childWidth; 
+        });
+    }
+
+    // Draw the node circle on top of the lines
     ctx.beginPath();
-    ctx.arc(x, y, 20, 0, 2 * Math.PI);
-    ctx.fillStyle = "#3498db"; // Blue for the waiting room
+    ctx.arc(x, y, 22, 0, 2 * Math.PI);
+    ctx.fillStyle = "#3498db"; 
     ctx.fill();
     ctx.stroke();
 
-    // Draw the Text (severity in middle, name above)
+    // Draw the Text
     ctx.fillStyle = "white";
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
@@ -147,14 +189,12 @@ function drawBHNode(node, x, y, spacing) {
     ctx.fillText(node.severity, x, y);
     
     ctx.fillStyle = "black";
-    ctx.fillText(node.name, x, y - 25);
+    ctx.fillText(node.name, x, y - 30);
     
-    // Draw degree below the node
+    // Draw degree
     ctx.fillStyle = "#7f8c8d";
-    ctx.font = "10px Arial";
-    ctx.fillText(`Deg: ${node.degree}`, x, y + 30); 
-
-    return totalWidth;
+    ctx.font = "12px Arial";
+    ctx.fillText(`Deg: ${node.degree}`, x, y + 35); 
 }
 // Load the initial empty state when the page opens
 fetchState();

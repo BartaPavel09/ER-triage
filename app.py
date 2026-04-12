@@ -78,6 +78,15 @@ def treat_patient():
     else:
         return jsonify({"status": "error", "message": "No patients in waiting room."})
 
+@app.route('/reset', methods=['POST'])
+def reset_hospital():
+    # Uses global so it can override the existing structures with new empty ones
+    global er_waiting_room, er_database
+    er_waiting_room = BinomialHeap()
+    er_database = RedBlackTree()
+    
+    return jsonify({"status": "success", "message": "All records cleared!"})
+
 @app.route('/get_state', methods=['GET'])
 def get_state():
     # Returns the full layout of both structures
