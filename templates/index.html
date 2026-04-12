@@ -27,8 +27,20 @@
         <div id="statusMessage"></div>
     </div>
 
-    <div class="canvas-container"> <!-- Container for displaying the hospital layout and patient flow -->
-        <canvas id="hospitalCanvas" width="1000" height="800"></canvas>
+    <div class="canvas-container">
+        <div class="board">
+            <h3>Waiting Room (Binomial Heap)</h3>
+            <div class="canvas-scroll-wrapper">
+                <canvas id="heapCanvas" width="2500" height="500"></canvas>
+            </div>
+        </div>
+
+        <div class="board">
+            <h3>Patient Records (Red-Black Tree)</h3>
+            <div class="canvas-scroll-wrapper">
+                <canvas id="rbtCanvas" width="2500" height="500"></canvas>
+            </div>
+        </div>
     </div>
 
     <script src="{{ url_for('static', filename='script.js') }}"></script>

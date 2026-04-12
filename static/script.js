@@ -1,22 +1,22 @@
-const canvas = document.getElementById('hospitalCanvas');
-const ctx = canvas.getContext('2d');
+// Grab both canvases
+const heapCanvas = document.getElementById('heapCanvas');
+const heapCtx = heapCanvas.getContext('2d');
 
-// Fetch the current state from the backend
+const rbtCanvas = document.getElementById('rbtCanvas');
+const rbtCtx = rbtCanvas.getContext('2d');
+
+// API Calls
 async function fetchState() {
     const response = await fetch('/get_state');
     const data = await response.json();
     draw(data);
 }
 
-// Admit a new patient 
 async function admitPatient() {
     const name = document.getElementById('pName').value;
     const severity = document.getElementById('pSeverity').value;
     
-    if(!name) {
-        alert("Please enter a patient name");
-        return;
-    }
+    if(!name) { alert("Please enter a patient name"); return; }
 
     const response = await fetch('/add_patient', {
         method: 'POST',
@@ -27,174 +27,151 @@ async function admitPatient() {
     const result = await response.json();
     document.getElementById('statusMessage').innerText = result.message;
     document.getElementById('pName').value = "";
-    
-    fetchState(); // Grab the new tree data and redraw
+    fetchState(); 
 }
 
-// Treat patient 
 async function treatPatient() {
     const response = await fetch('/treat_patient', { method: 'POST' });
     const result = await response.json();
-    
     document.getElementById('statusMessage').innerText = result.message;
-    fetchState(); // Grab the new tree data and redraw
+    fetchState(); 
 }
 
-// Reset the hospital state (clear all patients and records)
 async function resetHospital() {
     const response = await fetch('/reset', { method: 'POST' });
     const result = await response.json();
-    
     document.getElementById('statusMessage').innerText = result.message;
-    fetchState(); // Grab the empty state and clear the canvas
+    fetchState(); 
 }
 
-// Drawing Logic
+function getDepth(node) {
+    if (!node) return 0;
+    return 1 + Math.max(getDepth(node.left), getDepth(node.right));
+}
+
+// Main drawing function
 function draw(data) {
-    ctx.clearRect(0, 0, canvas.width, canvas.height); // Wipe the canvas clean
-    
-    ctx.textAlign = "left";
+    // Wipe BOTH canvases clean
+    heapCtx.clearRect(0, 0, heapCanvas.width, heapCanvas.height);
+    rbtCtx.clearRect(0, 0, rbtCanvas.width, rbtCanvas.height);
 
-    // Draw Titles
-    ctx.fillStyle = "black";
-    ctx.font = "bold 20px Arial";
-    ctx.fillText("Waiting Room Priority Queue", 50, 40);
-    ctx.fillText("Patient Records (Red-Black Tree)", 550, 40);
-
-    // Draw the Red-Black Tree
-    // Start at x=750 (right side), y=100 (top), with an initial spacing of 100px
     if (data.red_black_tree) {
-        drawRBT(data.red_black_tree, 750, 100, 100);
+        let rbtDepth = getDepth(data.red_black_tree);
+        
+        // Mathematically calculate the bottom nodes are always spaced apart safely
+        let baseSpacing = 40 * Math.pow(2, Math.max(0, rbtDepth - 2));
+        
+        // Dynamically calculate the root's starting point so left branches don't fall off the screen
+        let rootStartX = Math.max(rbtCanvas.width / 2, baseSpacing * 2);
+        
+        drawRBT(data.red_black_tree, rootStartX, 40, baseSpacing);
     }
     
-    // Draw the Binomial Heap on the left side
+    // Draw the Binomial Heap
     if (data.binomial_heap) {
         drawBinomialHeap(data.binomial_heap);
     }
-    console.log("Current Hospital State:", data);
 }
 
+// Red-Black Tree drawing logic
 function drawRBT(node, x, y, horizontalSpacing) {
     if (!node) return;
 
-    // Draw lines to children first
     if (node.left) {
-        ctx.beginPath();
-        ctx.moveTo(x, y);
-        ctx.lineTo(x - horizontalSpacing, y + 60);
-        ctx.stroke();
+        rbtCtx.beginPath();
+        rbtCtx.moveTo(x, y);
+        rbtCtx.lineTo(x - horizontalSpacing, y + 60);
+        rbtCtx.stroke();
         drawRBT(node.left, x - horizontalSpacing, y + 60, horizontalSpacing / 2);
     }
     if (node.right) {
-        ctx.beginPath();
-        ctx.moveTo(x, y);
-        ctx.lineTo(x + horizontalSpacing, y + 60);
-        ctx.stroke();
+        rbtCtx.beginPath();
+        rbtCtx.moveTo(x, y);
+        rbtCtx.lineTo(x + horizontalSpacing, y + 60);
+        rbtCtx.stroke();
         drawRBT(node.right, x + horizontalSpacing, y + 60, horizontalSpacing / 2);
     }
 
-    // Draw the Node Circle
-    ctx.beginPath();
-    ctx.arc(x, y, 20, 0, 2 * Math.PI);
-    ctx.fillStyle = node.color === "RED" ? "#e74c3c" : "#2c3e50";
-    ctx.fill();
-    ctx.stroke();
+    rbtCtx.beginPath();
+    rbtCtx.arc(x, y, 20, 0, 2 * Math.PI);
+    rbtCtx.fillStyle = node.color === "RED" ? "#e74c3c" : "#2c3e50";
+    rbtCtx.fill();
+    rbtCtx.stroke();
 
-    // Draw the Text (severity Key inside circle, name above circle)
-    ctx.fillStyle = "white";
-    ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
-    ctx.font = "bold 14px Arial";
-    ctx.fillText(node.key, x, y);
+    rbtCtx.fillStyle = "white";
+    rbtCtx.textAlign = "center";
+    rbtCtx.textBaseline = "middle";
+    rbtCtx.font = "bold 14px Arial";
+    rbtCtx.fillText(node.key, x, y);
     
-    ctx.fillStyle = "black";
-    ctx.fillText(node.name, x, y - 25);
+    rbtCtx.fillStyle = "black";
+    rbtCtx.fillText(node.name, x, y - 25);
 }
 
-// A constant for the minimum horizontal space one node needs
+// Binomial Heap drawing logic
 const MIN_NODE_WIDTH = 80; 
 
-// Calculate exactly how much horizontal space a tree needs
 function getTreeWidth(node) {
     if (!node) return 0;
-    // If it's a leaf node, it just needs enough space for its own circle
-    if (!node.children || node.children.length === 0) {
-        return MIN_NODE_WIDTH;
-    }
-    // If it has children, its width is the sum of all its children's widths
+    if (!node.children || node.children.length === 0) return MIN_NODE_WIDTH;
     let totalWidth = 0;
-    node.children.forEach(child => {
-        totalWidth += getTreeWidth(child);
-    });
+    node.children.forEach(child => { totalWidth += getTreeWidth(child); });
     return totalWidth;
 }
 
-// Draw the roots
 function drawBinomialHeap(roots) {
-    let startX = 50; // Starting left margin
-    let startY = 120;
+    let startX = 50; 
+    let startY = 50;
     
     roots.forEach(root => {
-        let treeWidth = getTreeWidth(root); // Find out how wide this tree is
-        let rootCenterX = startX + (treeWidth / 2); // Find the exact center of its "border"
-        
+        let treeWidth = getTreeWidth(root); 
+        let rootCenterX = startX + (treeWidth / 2); 
         drawBHNode(root, rootCenterX, startY);
-        
-        startX += treeWidth + 40; // Move startX over for the next tree in the root list
+        startX += treeWidth + 40; 
     });
 }
 
-// Draw the nodes the standard, centered way
 function drawBHNode(node, x, y) {
     if (!node) return;
-
     let childY = y + 80;
 
-    // Draw children first so lines go behind the parent circle
     if (node.children && node.children.length > 0) {
         let totalChildrenWidth = getTreeWidth(node);
-        // Start placing children at the far left edge of this node's assigned border
         let currentX = x - (totalChildrenWidth / 2);
 
         node.children.forEach(child => {
             let childWidth = getTreeWidth(child);
             let childCenterX = currentX + (childWidth / 2);
 
-            // Draw connecting line
-            ctx.beginPath();
-            ctx.moveTo(x, y + 20); // bottom of parent
-            ctx.lineTo(childCenterX, childY - 20); // top of child
-            ctx.stroke();
+            heapCtx.beginPath();
+            heapCtx.moveTo(x, y + 20); 
+            heapCtx.lineTo(childCenterX, childY - 20); 
+            heapCtx.stroke();
 
-            // Recursively draw child perfectly centered in its own allotted space
             drawBHNode(child, childCenterX, childY);
-
-            // Move X cursor over by the width of the child we just drew
             currentX += childWidth; 
         });
     }
 
-    // Draw the node circle on top of the lines
-    ctx.beginPath();
-    ctx.arc(x, y, 22, 0, 2 * Math.PI);
-    ctx.fillStyle = "#3498db"; 
-    ctx.fill();
-    ctx.stroke();
+    heapCtx.beginPath();
+    heapCtx.arc(x, y, 22, 0, 2 * Math.PI);
+    heapCtx.fillStyle = "#3498db"; 
+    heapCtx.fill();
+    heapCtx.stroke();
 
-    // Draw the Text
-    ctx.fillStyle = "white";
-    ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
-    ctx.font = "bold 14px Arial";
-    ctx.fillText(node.severity, x, y);
+    heapCtx.fillStyle = "white";
+    heapCtx.textAlign = "center";
+    heapCtx.textBaseline = "middle";
+    heapCtx.font = "bold 14px Arial";
+    heapCtx.fillText(node.severity, x, y);
     
-    ctx.fillStyle = "black";
-    ctx.fillText(node.name, x, y - 30);
+    heapCtx.fillStyle = "black";
+    heapCtx.fillText(node.name, x, y - 30);
     
-    // Draw degree
-    ctx.fillStyle = "#7f8c8d";
-    ctx.font = "12px Arial";
-    ctx.fillText(`Deg: ${node.degree}`, x, y + 35); 
+    heapCtx.fillStyle = "#7f8c8d";
+    heapCtx.font = "12px Arial";
+    heapCtx.fillText(`Deg: ${node.degree}`, x, y + 35); 
 }
-// Load the initial empty state when the page opens
+
+// Initial load
 fetchState();

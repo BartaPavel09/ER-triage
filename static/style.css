@@ -4,6 +4,7 @@ body {
     font-family: Arial, sans-serif;
     height: 100vh;
     background-color: #f4f4f9;
+    overflow: hidden;
 }
 
 .sidebar {
@@ -12,6 +13,8 @@ body {
     color: white;
     padding: 20px;
     box-sizing: border-box;
+    flex-shrink: 0;
+    overflow-y: auto;
 }
 
 .sidebar h2 {
@@ -60,20 +63,6 @@ button:hover {
     background: #c0392b;
 }
 
-.canvas-container {
-    flex-grow: 1;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    padding: 20px;
-}
-
-canvas {
-    background: white;
-    border-radius: 8px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-}
-
 #statusMessage {
     margin-top: 20px;
     font-size: 14px;
@@ -84,4 +73,46 @@ canvas {
 hr {
     border: 1px solid #34495e;
     margin: 20px 0;
+}
+
+.canvas-container { 
+    flex-grow: 1; 
+    display: flex; 
+    flex-direction: column; 
+    gap: 20px; 
+    padding: 20px; 
+    background-color: #ecf0f1;
+    overflow-y: auto;
+}
+
+.board { 
+    flex: 1; 
+    display: flex; 
+    flex-direction: column; 
+    align-items: center; 
+    background: white; 
+    border-radius: 8px; 
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1); 
+    padding: 15px;
+    min-width: 0; 
+}
+
+.board h3 {
+    margin-top: 0;
+    color: #2c3e50;
+    font-family: Arial, sans-serif;
+}
+
+.canvas-scroll-wrapper {
+    width: 100%;
+    flex-grow: 1; /* Makes the wrapper fill the board height */
+    overflow-x: auto;
+    overflow-y: auto;
+    border: 1px solid #bdc3c7;
+    border-radius: 4px;
+    background: #ffffff;
+}
+
+canvas { 
+    display: block; 
 }
