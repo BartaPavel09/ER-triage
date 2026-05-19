@@ -87,6 +87,47 @@ def treatPatient():
     return jsonify({"status": "error", "message": "No patients in waiting room."})
 
 
+@app.route('/delete_patient', methods=['POST'])
+def deletePatient():
+    data = request.get_json()
+    name = data.get('name')
+    severity = int(data.get('severity'))
+
+    # Delete from BH
+    bhNode = erWaitingRoom.findNode(name)
+    if bhNode:
+        erWaitingRoom.delete(bhNode)
+    
+    # Delete from RBT
+    rbtNode = erDatabase.findNode(erDatabase.root, severity, name)
+    if not erDatabase.isNil(rbtNode):
+        erDatabase.delete(rbtNode)
+
+    return jsonify({"status": "success", "message": f"Patient {name} removed from system."})
+
+
+@app.route('/update_severity', methods=['POST'])
+def updateSeverity():
+    data = request.get_json()
+    name = data.get('name')
+    oldSeverity = int(data.get('oldSeverity'))
+    newSeverity = int(data.get('newSeverity'))
+
+    # Update BH (Delete old, insert new)
+    bhNode = erWaitingRoom.findNode(name)
+    if bhNode:
+        erWaitingRoom.delete(bhNode)
+        erWaitingRoom.insert(name, newSeverity)
+    
+    # Update RBT (Delete old, insert new)
+    rbtNode = erDatabase.findNode(erDatabase.root, oldSeverity, name)
+    if not erDatabase.isNil(rbtNode):
+        erDatabase.delete(rbtNode)
+        erDatabase.insert(newSeverity, name)
+
+    return jsonify({"status": "success", "message": f"Updated {name}'s severity to {newSeverity}."})
+
+
 @app.route('/reset', methods=['POST'])
 def resetHospital():
     # Uses global so it can override the existing structures with new empty ones

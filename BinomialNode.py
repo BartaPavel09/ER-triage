@@ -114,3 +114,40 @@ class BinomialHeap:
         self.union(prevChild)
 
         return minNode
+
+    def findNode(self, name, node="INIT"):
+        # Initial call
+        if node == "INIT":
+            node = self.head
+        
+        # Base case for recursion
+        if node is None:
+            return None
+        
+        curr = node
+        while curr is not None:
+            if curr.patientName == name:
+                return curr
+            res = self.findNode(name, curr.child)
+            if res:
+                return res
+            curr = curr.sibling
+        return None
+
+    def decreaseKey(self, node, newKey):
+        if newKey > node.key:
+            return  # Can't increase key in decreaseKey
+        
+        node.key = newKey
+        y = node
+        z = y.p
+        while z is not None and y.key < z.key:
+            # Swap data between y and z
+            y.patientName, z.patientName = z.patientName, y.patientName
+            y.key, z.key = z.key, y.key
+            y = z
+            z = y.p
+
+    def delete(self, node):
+        self.decreaseKey(node, -1)  # -1 is always smaller than 1-10 severity
+        self.extractMin()

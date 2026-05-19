@@ -22,6 +22,24 @@
         <button onclick="admitPatient()">Admit Patient</button>
         <hr>
         <button onclick="treatPatient()" class="treat-btn">Doctor Ready (Treat Next)</button>
+        
+        <hr>
+        <h3>Manage Patient</h3>
+        <div class="control-group">
+            <label>Name:</label>
+            <input type="text" id="manageName" placeholder="Exact name">
+        </div>
+        <div class="control-group">
+            <label>Current Severity:</label>
+            <input type="number" id="currentSev" min="1" max="10">
+        </div>
+        <div class="control-group">
+            <label>New Severity (Decrease Only):</label>
+            <input type="number" id="newSev" min="1" max="10">
+        </div>
+        <button onclick="changeSeverity()">Switch Severity</button>
+        <button onclick="removePatient()" class="treat-btn">Delete Patient</button>
+
         <button onclick="resetHospital()" style="background-color: #7f8c8d; margin-top: 20px;">Clear All Records</button>
         
         <div id="statusMessage"></div>

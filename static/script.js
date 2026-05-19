@@ -37,6 +37,44 @@ async function treatPatient() {
     fetchState(); 
 }
 
+async function removePatient() {
+    const name = document.getElementById('manageName').value;
+    const severity = document.getElementById('currentSev').value;
+    
+    if(!name || !severity) { alert("Please enter name and current severity"); return; }
+
+    const response = await fetch('/delete_patient', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: name, severity: severity })
+    });
+    
+    const result = await response.json();
+    document.getElementById('statusMessage').innerText = result.message;
+    fetchState();
+}
+
+async function changeSeverity() {
+    const name = document.getElementById('manageName').value;
+    const oldSev = document.getElementById('currentSev').value;
+    const newSev = document.getElementById('newSev').value;
+    
+    if(!name || !oldSev || !newSev) { alert("Please fill all fields"); return; }
+
+    const response = await fetch('/update_severity', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: name, oldSeverity: oldSev, newSeverity: newSev })
+    });
+    
+    const result = await response.json();
+    document.getElementById('statusMessage').innerText = result.message;
+    if (result.status === "success") {
+        document.getElementById('currentSev').value = newSev;
+    }
+    fetchState();
+}
+
 async function resetHospital() {
     const response = await fetch('/reset', { method: 'POST' });
     const result = await response.json();

@@ -112,3 +112,110 @@ class RedBlackTree:
         if key < w.key:
             return self.search(w.left, key)
         return self.search(w.right, key)
+
+    def findNode(self, w, key, name):
+        if self.isNil(w):
+            return self.Nil
+        if w.key == key and w.patientName == name:
+            return w
+        
+        # If the key is smaller, it MUST be on the left
+        if key < w.key:
+            return self.findNode(w.left, key, name)
+        # If the key is larger, it MUST be on the right
+        elif key > w.key:
+            return self.findNode(w.right, key, name)
+        else:
+            # Key is equal, but name is different. 
+            # Due to rotations, it could be in either subtree.
+            left_res = self.findNode(w.left, key, name)
+            if not self.isNil(left_res):
+                return left_res
+            return self.findNode(w.right, key, name)
+
+    def minimum(self, x):
+        while not self.isNil(x.left):
+            x = x.left
+        return x
+
+    def rbTransplant(self, u, v):
+        if self.isNil(u.p):
+            self.root = v
+        elif u == u.p.left:
+            u.p.left = v
+        else:
+            u.p.right = v
+        v.p = u.p
+
+    def delete(self, z):
+        y = z
+        y_original_color = y.col
+        if self.isNil(z.left):
+            x = z.right
+            self.rbTransplant(z, z.right)
+        elif self.isNil(z.right):
+            x = z.left
+            self.rbTransplant(z, z.left)
+        else:
+            y = self.minimum(z.right)
+            y_original_color = y.col
+            x = y.right
+            if y.p == z:
+                x.p = y
+            else:
+                self.rbTransplant(y, y.right)
+                y.right = z.right
+                y.right.p = y
+            self.rbTransplant(z, y)
+            y.left = z.left
+            y.left.p = y
+            y.col = z.col
+        
+        if y_original_color == "BLACK":
+            self.deleteFixup(x)
+
+    def deleteFixup(self, x):
+        while x != self.root and x.col == "BLACK":
+            if x == x.p.left:
+                w = x.p.right
+                if w.col == "RED":
+                    w.col = "BLACK"
+                    x.p.col = "RED"
+                    self.leftRotate(x.p)
+                    w = x.p.right
+                if w.left.col == "BLACK" and w.right.col == "BLACK":
+                    w.col = "RED"
+                    x = x.p
+                else:
+                    if w.right.col == "BLACK":
+                        w.left.col = "BLACK"
+                        w.col = "RED"
+                        self.rightRotate(w)
+                        w = x.p.right
+                    w.col = x.p.col
+                    x.p.col = "BLACK"
+                    w.right.col = "BLACK"
+                    self.leftRotate(x.p)
+                    x = self.root
+            else:
+                w = x.p.left
+                if w.col == "RED":
+                    w.col = "BLACK"
+                    x.p.col = "RED"
+                    self.rightRotate(x.p)
+                    w = x.p.left
+                if w.right.col == "BLACK" and w.left.col == "BLACK":
+                    w.col = "RED"
+                    x = x.p
+                else:
+                    if w.left.col == "BLACK":
+                        w.right.col = "BLACK"
+                        w.col = "RED"
+                        self.leftRotate(w)
+                        w = x.p.left
+                    w.col = x.p.col
+                    x.p.col = "BLACK"
+                    w.left.col = "BLACK"
+                    self.rightRotate(x.p)
+                    x = self.root
+        x.col = "BLACK"
