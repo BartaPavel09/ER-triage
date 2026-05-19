@@ -1,11 +1,12 @@
 class RBNode:
-    def __init__(self, key, patient_name=""):
+    def __init__(self, key, patientName=""):
         self.key = key
-        self.patient_name = patient_name
+        self.patientName = patientName
         self.col = "BLACK"
         self.p = None
         self.left = None
         self.right = None
+
 
 class RedBlackTree:
     def __init__(self):
@@ -15,10 +16,10 @@ class RedBlackTree:
         self.Nil.right = self.Nil
         self.root = self.Nil
 
-    def is_nil(self, node):
+    def isNil(self, node):
         return node == self.Nil
 
-    def left_rotate(self, x):
+    def leftRotate(self, x):
         y = x.right
         x.right = y.left
         if y.left != self.Nil:
@@ -33,7 +34,7 @@ class RedBlackTree:
         y.left = x
         x.p = y
 
-    def right_rotate(self, y):
+    def rightRotate(self, y):
         x = y.left
         y.left = x.right
         if x.right != self.Nil:
@@ -48,12 +49,12 @@ class RedBlackTree:
         x.right = y
         y.p = x
 
-    def insert(self, key, patient_name):
-        z = RBNode(key, patient_name)
-        
+    def insert(self, key, patientName):
+        z = RBNode(key, patientName)
+
         y = self.Nil
         x = self.root
-        while not self.is_nil(x):
+        while not self.isNil(x):
             y = x
             if z.key < x.key:
                 x = x.left
@@ -61,7 +62,7 @@ class RedBlackTree:
                 x = x.right
 
         z.p = y
-        if self.is_nil(y):
+        if self.isNil(y):
             self.root = z
         elif z.key < y.key:
             y.left = z
@@ -71,9 +72,9 @@ class RedBlackTree:
         z.left = self.Nil
         z.right = self.Nil
         z.col = "RED"
-        self.insert_fixup(z)
+        self.insertFixup(z)
 
-    def insert_fixup(self, z):
+    def insertFixup(self, z):
         while z.p.col == "RED":
             if z.p == z.p.p.left:
                 y = z.p.p.right
@@ -85,10 +86,10 @@ class RedBlackTree:
                 else:
                     if z == z.p.right:
                         z = z.p
-                        self.left_rotate(z)
+                        self.leftRotate(z)
                     z.p.col = "BLACK"
                     z.p.p.col = "RED"
-                    self.right_rotate(z.p.p)
+                    self.rightRotate(z.p.p)
             else:
                 y = z.p.p.left
                 if y.col == "RED":
@@ -99,14 +100,14 @@ class RedBlackTree:
                 else:
                     if z == z.p.left:
                         z = z.p
-                        self.right_rotate(z)
+                        self.rightRotate(z)
                     z.p.col = "BLACK"
                     z.p.p.col = "RED"
-                    self.left_rotate(z.p.p)
+                    self.leftRotate(z.p.p)
         self.root.col = "BLACK"
 
     def search(self, w, key):
-        if self.is_nil(w) or w.key == key:
+        if self.isNil(w) or w.key == key:
             return w
         if key < w.key:
             return self.search(w.left, key)

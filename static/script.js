@@ -55,21 +55,21 @@ function draw(data) {
     heapCtx.clearRect(0, 0, heapCanvas.width, heapCanvas.height);
     rbtCtx.clearRect(0, 0, rbtCanvas.width, rbtCanvas.height);
 
-    if (data.red_black_tree) {
-        let rbtDepth = getDepth(data.red_black_tree);
-        
+    if (data.redBlackTree) {
+        let rbtDepth = getDepth(data.redBlackTree);
+
         // Mathematically calculate the bottom nodes are always spaced apart safely
         let baseSpacing = 40 * Math.pow(2, Math.max(0, rbtDepth - 2));
-        
+
         // Dynamically calculate the root's starting point so left branches don't fall off the screen
         let rootStartX = Math.max(rbtCanvas.width / 2, baseSpacing * 2);
-        
-        drawRBT(data.red_black_tree, rootStartX, 40, baseSpacing);
+
+        drawRBT(data.redBlackTree, rootStartX, 40, baseSpacing);
     }
-    
+
     // Draw the Binomial Heap
-    if (data.binomial_heap) {
-        drawBinomialHeap(data.binomial_heap);
+    if (data.binomialHeap) {
+        drawBinomialHeap(data.binomialHeap);
     }
 }
 
@@ -109,11 +109,11 @@ function drawRBT(node, x, y, horizontalSpacing) {
 }
 
 // Binomial Heap drawing logic
-const MIN_NODE_WIDTH = 80; 
+const minNodeWidth = 80;
 
 function getTreeWidth(node) {
     if (!node) return 0;
-    if (!node.children || node.children.length === 0) return MIN_NODE_WIDTH;
+    if (!node.children || node.children.length === 0) return minNodeWidth;
     let totalWidth = 0;
     node.children.forEach(child => { totalWidth += getTreeWidth(child); });
     return totalWidth;
