@@ -10,12 +10,12 @@ The application utilizes two primary data structures running on a Python backend
 ### Binomial Heap (The waiting room / priority queue)
 * **Purpose:** Handles the immediate triage queue, ensuring the doctor always treats the patient with the highest severity (lowest key number) next.
 * **Why it was chosen:** While a standard binary heap could work, a Binomial Heap was selected for its superior $O(\log n)$ union operation. In a real-world scenario where two hospital wards might merge their waiting rooms, a binomial heap handles this exponentially faster than standard priority queues.
-* **Implementation details:** Written from scratch following CLRS logic. It uses a `BinomialNode` with pointers to its parent, leftmost child, and right sibling. It supports $O(\log n)$ `insert` and `extract_min` operations, utilizing the standard `union` and `binomial_link` logic to merge trees of equal degree.
+* **Implementation details:** Written from scratch following CLRS logic. It uses a `BinomialNode` with pointers to its parent, leftmost child, and right sibling. It supports $O(\log n)$ `insert` and `extractMin` operations, utilizing the standard `union` and `binomialLink` logic to merge trees of equal degree.
 
 ### Red-Black Tree (The patient records database)
 * **Purpose:** Acts as the historical database for all admitted patients.
 * **Why it was chosen:** A hospital needs to quickly look up, insert, and update patient records regardless of how many patients arrive. A standard Binary Search Tree (BST) could degrade into a linked list $O(n)$ if patients arrive with perfectly increasing severities. The Red-Black Tree guarantees $O(\log n)$ height, ensuring fast performance in all scenarios.
-* **Implementation details:** Implements strict CLRS Red-Black logic, including the use of a centralized sentinel `Nil` node (colored Black) to replace standard null pointers. It automatically executes Left and Right Rotations and color-flipping (`insert_fixup`) to maintain its balanced properties after every insertion.
+* **Implementation details:** Implements strict CLRS Red-Black logic, including the use of a centralized sentinel `Nil` node (colored Black) to replace standard null pointers. It automatically executes Left and Right Rotations and color-flipping (`insertFixup`) to maintain its balanced properties after every insertion.
 
 ## 3. How to Run the Program
 
