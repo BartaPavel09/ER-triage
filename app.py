@@ -10,7 +10,6 @@ erDatabase = RedBlackTree()
 
 # --- SERIALIZATION HELPERS ---
 
-
 # Recursively walks through a Binomial Tree building a nested dictionary
 def serializeBhNode(node):
     children = []
@@ -26,7 +25,6 @@ def serializeBhNode(node):
         "children": children,
     }
 
-
 # Grabs the root list of the Binomial Heap and serializes each tree
 def serializeBinomialHeap(heap):
     roots = []
@@ -35,7 +33,6 @@ def serializeBinomialHeap(heap):
         roots.append(serializeBhNode(curr))
         curr = curr.sibling
     return roots
-
 
 # Recursively walks the Red-Black Tree. Returns None when it hits the Sentinel Nil
 def serializeRbtNode(tree, node):
@@ -49,14 +46,11 @@ def serializeRbtNode(tree, node):
         "right": serializeRbtNode(tree, node.right),
     }
 
-
 # --- API ROUTES ---
-
 
 @app.route('/')
 def home():
     return render_template('index.html')
-
 
 @app.route('/add_patient', methods=['POST'])
 def addPatient():
@@ -71,7 +65,6 @@ def addPatient():
 
     return jsonify({"status": "success", "message": f"Patient {name} added."})
 
-
 @app.route('/treat_patient', methods=['POST'])
 def treatPatient():
     # Removes the minimum node from the Binomial Heap
@@ -85,7 +78,6 @@ def treatPatient():
             }
         )
     return jsonify({"status": "error", "message": "No patients in waiting room."})
-
 
 @app.route('/delete_patient', methods=['POST'])
 def deletePatient():
@@ -104,7 +96,6 @@ def deletePatient():
         erDatabase.delete(rbtNode)
 
     return jsonify({"status": "success", "message": f"Patient {name} removed from system."})
-
 
 @app.route('/update_severity', methods=['POST'])
 def updateSeverity():
@@ -127,7 +118,6 @@ def updateSeverity():
 
     return jsonify({"status": "success", "message": f"Updated {name}'s severity to {newSeverity}."})
 
-
 @app.route('/reset', methods=['POST'])
 def resetHospital():
     # Uses global so it can override the existing structures with new empty ones
@@ -136,7 +126,6 @@ def resetHospital():
     erDatabase = RedBlackTree()
 
     return jsonify({"status": "success", "message": "All records cleared!"})
-
 
 @app.route('/get_state', methods=['GET'])
 def getState():
@@ -147,7 +136,6 @@ def getState():
             "redBlackTree": serializeRbtNode(erDatabase, erDatabase.root),
         }
     )
-
 
 if __name__ == '__main__':
     app.run(debug=True)
