@@ -99,8 +99,12 @@ function draw(data) {
         // Mathematically calculate the bottom nodes are always spaced apart safely
         let baseSpacing = 40 * Math.pow(2, Math.max(0, rbtDepth - 2));
 
-        // Dynamically calculate the root's starting point so left branches don't fall off the screen
-        let rootStartX = Math.max(rbtCanvas.width / 2, baseSpacing * 2);
+        // Expand canvas to fit the full tree before drawing
+        rbtCanvas.width  = Math.max(2500, baseSpacing * 4 + 200);
+        rbtCanvas.height = Math.max(500,  rbtDepth * 80 + 80);
+
+        // Center root horizontally in the (possibly enlarged) canvas
+        let rootStartX = rbtCanvas.width / 2;
 
         drawRBT(data.redBlackTree, rootStartX, 40, baseSpacing);
     }
@@ -112,22 +116,24 @@ function draw(data) {
 }
 
 // Red-Black Tree drawing logic
+const RBT_LEVEL_HEIGHT = 80;
+
 function drawRBT(node, x, y, horizontalSpacing) {
     if (!node) return;
 
     if (node.left) {
         rbtCtx.beginPath();
         rbtCtx.moveTo(x, y);
-        rbtCtx.lineTo(x - horizontalSpacing, y + 60);
+        rbtCtx.lineTo(x - horizontalSpacing, y + RBT_LEVEL_HEIGHT);
         rbtCtx.stroke();
-        drawRBT(node.left, x - horizontalSpacing, y + 60, horizontalSpacing / 2);
+        drawRBT(node.left, x - horizontalSpacing, y + RBT_LEVEL_HEIGHT, horizontalSpacing / 2);
     }
     if (node.right) {
         rbtCtx.beginPath();
         rbtCtx.moveTo(x, y);
-        rbtCtx.lineTo(x + horizontalSpacing, y + 60);
+        rbtCtx.lineTo(x + horizontalSpacing, y + RBT_LEVEL_HEIGHT);
         rbtCtx.stroke();
-        drawRBT(node.right, x + horizontalSpacing, y + 60, horizontalSpacing / 2);
+        drawRBT(node.right, x + horizontalSpacing, y + RBT_LEVEL_HEIGHT, horizontalSpacing / 2);
     }
 
     rbtCtx.beginPath();
